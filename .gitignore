@@ -1,0 +1,7 @@
+/HelmetDetection/
+/HelmetDetection2/
+/test_export/
+.idea
+.vscode
+node_modules
+__pycache__
