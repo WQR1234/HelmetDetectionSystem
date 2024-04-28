@@ -11,10 +11,10 @@
 
                         <ul class="nav nav-pills nav-justified flex-column text-center">
                             <li class="nav-item mt-2 mb-2">
-                                <RouterLink class="nav-link" to="/image" active-class="nav-link active">活动</RouterLink>
+                                <RouterLink class="nav-link" to="/image" active-class="nav-link active">图片检测</RouterLink>
                             </li>
                             <li class="nav-item mt-2 mb-2">
-                                <a class="nav-link" href="#">链接</a>
+                                <RouterLink class="nav-link" to="/video" active-class="nav-link active">视频检测</RouterLink>
                             </li>
                             <li class="nav-item mt-2 mb-2">
                                 <a class="nav-link" href="#">链接</a>

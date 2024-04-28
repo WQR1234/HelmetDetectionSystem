@@ -27,6 +27,28 @@ class Yolo5Detect:
         img /= 255.0
         img = np.expand_dims(img, 0)
         return img, im0
+    
+    def get_vedio(self, vedio_path):
+        cap = cv2.VideoCapture(vedio_path)
+
+        while True:
+            # 读取视频帧
+            ret, frame = cap.read()
+        
+            # 如果正确读取帧，ret为True
+            if not ret:
+                return
+            
+            im0 = frame.copy()
+            img = self.letterbox(frame)[0]
+
+            img = img[:, :, ::-1].transpose(2, 0, 1).astype(np.float32)  # BGR to RGB, to 3x416x416
+            img = np.ascontiguousarray(img)
+
+            img /= 255.0
+            img = np.expand_dims(img, 0)
+
+            yield img, im0
 
     def letterbox(self, img, new_shape=(640, 640), color=(114, 114, 114), auto=True, scaleFill=False, scaleup=True, stride=32):
         # Resize and pad image while meeting stride-multiple constraints
@@ -261,10 +283,10 @@ class Yolo5Detect:
 
         # 输入数据
         input_data = {
-            "images": img  # 替换为您的输入数据
+            "images": img
         }
 
-        output = self.model.run(input_data)
+        output = self.model.run(None, input_data)
 
         output = self.detect(output)
 
@@ -281,8 +303,48 @@ class Yolo5Detect:
             self.plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
 
         image_name = os.path.basename(image_path)
-        image_dir = os.path.dirname(image_path)
+        # image_dir = os.path.dirname(image_path)
         image_name, image_extension = os.path.splitext(image_name)
 
-        save_path = os.path.join(image_dir, image_name+'-detected'+image_extension)
+        save_path = 'media/'+image_name+'-detected'+image_extension
         cv2.imwrite(save_path, im0)
+
+        return save_path
+    
+    def detect_and_save_video(self, video_path: str):
+        names = ['hat', 'person']
+        colors = [[np.random.randint(0, 255) for _ in range(3)] for _ in names]
+
+        # 获取帧率、宽高
+        cap = cv2.VideoCapture(video_path)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        cap.release()
+
+        video_name = os.path.basename(video_path)
+        video_name, video_extension = os.path.splitext(video_name)
+        save_path = 'media/'+video_name+'-detected'+video_extension
+
+        # 视频写入器
+        vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'h264'), fps, (w, h))
+
+        for img, im0 in self.get_vedio(video_path):
+            input_data = {
+                "images": img
+            }
+
+            output = self.model.run(None, input_data)
+
+            output = self.detect(output)
+
+            pred = self.non_max_suppression(output)[0]
+            pred[:, :4] = self.scale_coords(img.shape[2:], pred[:, :4], im0.shape).round()
+
+            for *xyxy, conf, cls in reversed(pred):
+                label = f'{names[int(cls)]} {conf:.2f}'
+                self.plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
+            
+            vid_writer.write(im0)
+
+        return save_path

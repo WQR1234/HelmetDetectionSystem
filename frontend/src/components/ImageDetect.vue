@@ -3,11 +3,16 @@
         <img v-if="imageUrl" :src="imageUrl" alt="待上传图片" style="width: 100%">
     </div>
 
-    <div class="input-group mt-3 mb-3">
-        <input type="file" name="image" class="form-control" accept="image/*" @change="handleFileChange">
+    <div class="input-group mt-4 mb-3">
+        <input type="file" name="image" class="form-control mx-md-2" accept="image/*" @change="handleFileChange">
         <button class="btn btn-primary" @click="uploadImage">上传</button>
     </div>
-    <button class="btn btn-primary" @click="detect">开始检测</button>
+
+    <div class="input-group">
+        <button class="btn btn-success mx-md-auto w-50" @click="detect">开始检测</button>
+        <button class="btn btn-primary mx-md-auto w-50" @click="download">下载</button>
+    </div>
+
 
 </template>
 
@@ -15,11 +20,11 @@
     import {ref} from "vue";
     import axios from 'axios';
 
-    let selectedFile = null
+    let selectedFile: File | null = null
     let imageUrl = ref('')
 
     function handleFileChange(evt) {
-        selectedFile = evt.target.files[0];
+        selectedFile = evt.target.files[0]
         console.log(selectedFile);
     }
 
@@ -37,9 +42,49 @@
     }
 
     async function detect() {
+        const imageUrlPaths = imageUrl.value.split('/')
+        if (imageUrlPaths.length===0) {
+            return
+        }
+        const imageName = imageUrlPaths[imageUrlPaths.length-1]
+
         try {
-            const response = await axios.get('http://localhost:8000/foobar')
+
+            const response = await axios.get('http://localhost:8000/detect_image', {
+                params: {
+                    image_name: imageName
+                }
+            })
             console.log(response.data)
+            imageUrl.value = response.data.detected_path
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async function download() {
+        const imageUrlPaths = imageUrl.value.split('/')
+        if (imageUrlPaths.length===0) {
+            return
+        }
+        const imageName = imageUrlPaths[imageUrlPaths.length-1]
+        try {
+
+            const response = await axios.get('http://localhost:8000/download_image', {
+                params: {
+                    image_name: imageName
+                },
+                responseType: 'blob'
+            })
+            // console.log(response)
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', imageName);
+            document.body.appendChild(link);
+            link.click();
+
         } catch (error) {
             console.log(error)
         }

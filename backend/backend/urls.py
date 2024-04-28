@@ -24,8 +24,13 @@ from HelmetDetection import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('foobar/', views.foobar),
+
     path('upload_image/', views.upload_image), 
+    path('detect_image/', views.detect_image),
+    path('download_image/', views.download_image), 
+
+    path('upload_video/', views.upload_video), 
+    path('detect_video/', views.detect_video),
 
     re_path('media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT}, 'media')
 

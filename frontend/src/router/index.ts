@@ -1,6 +1,7 @@
 import {createRouter, createWebHistory} from 'vue-router'
 
 import ImageDetect from "@/components/ImageDetect.vue"
+import VideoDetect from "@/components/VideoDetect.vue";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -8,6 +9,10 @@ const router = createRouter({
         {
             path: '/image',
             component: ImageDetect
+        },
+        {
+            path: '/video',
+            component: VideoDetect
         }
     ]
 })
