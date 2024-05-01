@@ -25,12 +25,19 @@ from HelmetDetection import views
 urlpatterns = [
     path('admin/', admin.site.urls),
 
+    # 图片相关url
     path('upload_image/', views.upload_image), 
     path('detect_image/', views.detect_image),
     path('download_image/', views.download_image), 
 
+    # 视频相关url
     path('upload_video/', views.upload_video), 
     path('detect_video/', views.detect_video),
+
+    # 用户相关url
+    # path('register/', views.register_user),
+    # path('login/', views.login_user),
+    # path('check_login/', views.check_login),
 
     re_path('media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT}, 'media')
 

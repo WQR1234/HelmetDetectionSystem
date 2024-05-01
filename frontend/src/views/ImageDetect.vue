@@ -11,6 +11,7 @@
     <div class="input-group">
         <button class="btn btn-success mx-md-auto w-50" @click="detect">开始检测</button>
         <button class="btn btn-primary mx-md-auto w-50" @click="download">下载</button>
+        <button class="btn btn-primary mx-md-auto w-50" @click="check">查看登录</button>
     </div>
 
 
@@ -87,6 +88,25 @@
 
         } catch (error) {
             console.log(error)
+        }
+    }
+
+    async function check() {
+        const token = localStorage.getItem('token');
+
+        console.log(token);
+
+        try {
+            const response = await axios.get('http://localhost:8000/check_login/');
+            if (response.data.isLogin) {
+                store.isLogin = true; // 如果后端返回已登录状态，更新前端的登录状态
+                console.log('已登录')
+            }
+            else {
+                console.log('未登录！！！')
+            }
+        } catch (error) {
+            console.error('Error checking login status:', error);
         }
     }
 </script>
