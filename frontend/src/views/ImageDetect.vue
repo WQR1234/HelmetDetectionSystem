@@ -20,9 +20,11 @@
 <script setup lang="ts">
     import {ref} from "vue";
     import axios from 'axios';
+    import {useStore} from "@/store";
 
     let selectedFile: File | null = null
     let imageUrl = ref('')
+    const store = useStore()
 
     function handleFileChange(evt) {
         selectedFile = evt.target.files[0]
@@ -92,13 +94,16 @@
     }
 
     async function check() {
-        const token = localStorage.getItem('token');
 
-        console.log(token);
-
+        const access = localStorage.getItem('access')
         try {
-            const response = await axios.get('http://localhost:8000/check_login/');
-            if (response.data.isLogin) {
+            const response = await axios.get(store.serverRootUrl+'/check_login/', {
+                headers: {
+                    Authorization: `Bearer ${access}`,
+                }
+            });
+            console.log(response)
+            if (response.data.username) {
                 store.isLogin = true; // 如果后端返回已登录状态，更新前端的登录状态
                 console.log('已登录')
             }

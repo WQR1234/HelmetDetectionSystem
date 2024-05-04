@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'HelmetDetection',
     'rest_framework',
     'rest_framework_simplejwt',
-    'app',
+    'users',
 ]
 
 MIDDLEWARE = [

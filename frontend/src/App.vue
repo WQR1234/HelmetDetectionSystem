@@ -24,7 +24,12 @@
                                 <RouterLink class="nav-link" to="/login" active-class="nav-link active">登录</RouterLink>
                             </li>
 
-
+                            <li class="nav-item mt-2 mb-2" v-if="store.isLogin">
+                                <RouterLink class="nav-link" to="/???" active-class="nav-link active">我的</RouterLink>
+                            </li>
+                            <li class="nav-item mt-2 mb-2" v-if="store.isLogin">
+                                <button class="nav-link" @click="logout">退出登录</button>
+                            </li>
                         </ul>
 
                   </div>
@@ -40,13 +45,20 @@
     import  {useStore} from "@/store";
     import {onMounted} from "vue";
     import axios from "axios";
+    import router from "@/router";
 
     const store = useStore()
 
     onMounted( async ()=>{
+        const access = localStorage.getItem('access')
         try {
-            const response = await axios.get(store.serverRootUrl+'/check_login/');
-            if (response.data.isLogin) {
+            const response = await axios.get(store.serverRootUrl+'/check_login/', {
+                headers: {
+                    Authorization: `Bearer ${access}`,
+                }
+            });
+            console.log(response)
+            if (response.data.username) {
                 store.isLogin = true; // 如果后端返回已登录状态，更新前端的登录状态
                 console.log('已登录')
             }
@@ -57,6 +69,12 @@
             console.error('Error checking login status:', error);
         }
     })
+
+    function logout() {
+        localStorage.clear()
+        store.isLogin = false
+        router.push('/image')
+    }
 
 </script>
 

@@ -32,11 +32,14 @@
         data.append('password', password.value);
 
         try {
-            const response = await axios.post('http://localhost:8000/login/', data)
+            const response = await axios.post('http://localhost:8000/token/', data)
 
+            console.log(response)
             if (response.status === 200) {
                 alert('登录成功');
                 store.isLogin = true;
+                localStorage.setItem('access', response.data['access']);
+                localStorage.setItem('refresh', response.data['refresh']);
                 await router.push('/image');
             }
         } catch (error) {

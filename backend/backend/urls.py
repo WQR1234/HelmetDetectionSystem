@@ -18,8 +18,9 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.views.static import serve
 from django.conf import settings
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-
+from users.views import UserRegisterAPIView, get_user_info
 from HelmetDetection import views
 
 urlpatterns = [
@@ -38,6 +39,12 @@ urlpatterns = [
     # path('register/', views.register_user),
     # path('login/', views.login_user),
     # path('check_login/', views.check_login),
+
+    path('register/', UserRegisterAPIView.as_view()),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    path('check_login/', get_user_info),
 
     re_path('media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT}, 'media')
 
