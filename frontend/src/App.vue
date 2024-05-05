@@ -25,7 +25,7 @@
                             </li>
 
                             <li class="nav-item mt-2 mb-2" v-if="store.isLogin">
-                                <RouterLink class="nav-link" to="/???" active-class="nav-link active">我的</RouterLink>
+                                <RouterLink class="nav-link" to="/user" active-class="nav-link active">我的</RouterLink>
                             </li>
                             <li class="nav-item mt-2 mb-2" v-if="store.isLogin">
                                 <button class="nav-link" @click="logout">退出登录</button>

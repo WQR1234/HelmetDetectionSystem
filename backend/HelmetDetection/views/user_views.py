@@ -59,7 +59,10 @@ def login_user(request: HttpRequest):
 @csrf_exempt
 def check_login(request: HttpRequest):
     print(request.user.username)
+
     if request.user.username:
         
         return JsonResponse({'isLogin': True})
     return JsonResponse({'isLogin': False})
+
+

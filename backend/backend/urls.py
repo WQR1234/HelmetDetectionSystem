@@ -20,7 +20,7 @@ from django.views.static import serve
 from django.conf import settings
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from users.views import UserRegisterAPIView, get_user_info
+from users.views import UserRegisterAPIView, get_user_info, get_user_images
 from HelmetDetection import views
 
 urlpatterns = [
@@ -45,6 +45,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     path('check_login/', get_user_info),
+    path('get_images/', get_user_images),
 
     re_path('media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT}, 'media')
 

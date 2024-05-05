@@ -1,6 +1,6 @@
 <template>
     <div class="detected-image">
-        <img v-if="imageUrl" :src="imageUrl" alt="待上传图片" style="width: 100%">
+        <img v-if="imageUrl" :src="imageUrl" alt="待上传图片">
     </div>
 
     <div class="input-group mt-4 mb-3">
@@ -18,8 +18,8 @@
 </template>
 
 <script setup lang="ts">
-    import {ref} from "vue";
-    import axios from 'axios';
+import {onMounted, ref} from "vue";
+    import axios, {type AxiosRequestConfig} from 'axios';
     import {useStore} from "@/store";
 
     let selectedFile: File | null = null
@@ -34,9 +34,16 @@
     async function uploadImage() {
         const formData = new FormData()
         formData.append('image', selectedFile)
+        const access = localStorage.getItem('access')
+        const config: AxiosRequestConfig = {}
+        if (store.isLogin) {
+            config.headers = {
+                Authorization: `Bearer ${access}`,
+            }
+        }
 
         try {
-            const response = await axios.post('http://localhost:8000/upload_image/', formData)
+            const response = await axios.post('http://localhost:8000/upload_image/', formData, config)
             imageUrl.value = response.data.image_url
             console.log(imageUrl.value)
         } catch (error) {
@@ -114,6 +121,8 @@
             console.error('Error checking login status:', error);
         }
     }
+
+
 </script>
 
 <style scoped>
@@ -122,5 +131,6 @@
         justify-content: center;
         align-items: center;
         height: 80%;
+        max-width: 100%;
     }
 </style>

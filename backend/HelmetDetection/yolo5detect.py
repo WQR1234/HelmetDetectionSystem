@@ -278,7 +278,7 @@ class Yolo5Detect:
         boxes[:, 2] = np.clip(boxes[:, 2], 0, img_shape[1])  # x2
         boxes[:, 3] = np.clip(boxes[:, 3], 0, img_shape[0])  # y2
 
-    def detect_and_save_image(self, image_path: str):
+    def detect_and_save_image(self, image_path: str, save_path):
         img, im0 = self.get_image(image_path)
 
         # 输入数据
@@ -302,14 +302,9 @@ class Yolo5Detect:
             label = f'{names[int(cls)]} {conf:.2f}'
             self.plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
 
-        image_name = os.path.basename(image_path)
-        # image_dir = os.path.dirname(image_path)
-        image_name, image_extension = os.path.splitext(image_name)
-
-        save_path = 'media/'+image_name+'-detected'+image_extension
+        
         cv2.imwrite(save_path, im0)
 
-        return save_path
     
     def detect_and_save_video(self, video_path: str):
         names = ['hat', 'person']

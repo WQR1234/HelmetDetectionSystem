@@ -4,14 +4,15 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import UserRegisterSerializer
+from .serializers import UserSerializer
+from HelmetDetection.serializers import ImageSerializer
 
 # Create your views here.
 
 
 class UserRegisterAPIView(APIView):
     def post(self, request):
-        serializer = UserRegisterSerializer(data=request.data)
+        serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -22,9 +23,18 @@ class UserRegisterAPIView(APIView):
 @permission_classes([IsAuthenticated])
 def get_user_info(request):
     user = request.user
+    # print(user.images.all())
     user_info = {
         'id': user.id,
         'username': user.username,
         # 其他用户信息
     }
     return Response(user_info, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_images(request):
+    user = request.user
+    images = user.images.all()
+    serializer = ImageSerializer(images, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
