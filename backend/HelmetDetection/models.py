@@ -6,7 +6,15 @@ from django.contrib.auth.models import User
 
 class Image(models.Model):
     user = models.ForeignKey(User, related_name='images', on_delete=models.CASCADE)
-    image_url = models.URLField()
+    image_name = models.CharField(max_length=30)
 
     def __str__(self):
-        return self.image_url
+        return self.image_name
+    
+
+class Video(models.Model):
+    user = models.ForeignKey(User, related_name='videos', on_delete=models.CASCADE)
+    video_name = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.video_name

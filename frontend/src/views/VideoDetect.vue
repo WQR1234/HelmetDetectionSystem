@@ -18,7 +18,10 @@
 
 <script setup lang="ts">
     import {ref} from "vue";
-    import axios from 'axios';
+    import axios, {type AxiosRequestConfig} from 'axios';
+    import {useStore} from "@/store";
+
+    const store = useStore()
 
     let selectedFile: File | null = null
     let videoUrl = ref('')
@@ -35,9 +38,17 @@
         const formData = new FormData()
         formData.append('video', selectedFile)
 
+        const access = localStorage.getItem('access')
+        const config: AxiosRequestConfig = {}
+        if (store.isLogin) {
+            config.headers = {
+                Authorization: `Bearer ${access}`,
+            }
+        }
+
         try {
-            const response = await axios.post('http://localhost:8000/upload_video/', formData)
-            videoUrl.value = response.data.video_url
+            const response = await axios.post('http://localhost:8000/upload_video/', formData, config)
+            videoUrl.value = store.serverRootUrl + '/' + response.data.video_path
             console.log(videoUrl.value)
         } catch (error) {
             console.log(error)
@@ -56,15 +67,22 @@
         }
         const videoName = videoUrlPaths[videoUrlPaths.length-1]
 
+        const access = localStorage.getItem('access')
+        const config: AxiosRequestConfig = {}
+        config.params = {
+            video_name: videoName
+        }
+        if (store.isLogin) {
+            config.headers = {
+                Authorization: `Bearer ${access}`,
+            }
+        }
+
         try {
 
-            const response = await axios.get('http://localhost:8000/detect_video', {
-                params: {
-                    video_name: videoName
-                }
-            })
+            const response = await axios.get('http://localhost:8000/detect_video', config)
             console.log(response.data)
-            videoUrl.value = response.data.detected_path
+            videoUrl.value =  store.serverRootUrl + '/' + response.data.detected_path
             detectStateText.value = '开始检测'
             detectState.value = false
         } catch (error) {
@@ -72,33 +90,6 @@
         }
     }
 
-    async function download() {
-        const videoUrlPaths = videoUrl.value.split('/')
-        if (videoUrlPaths.length===0) {
-            return
-        }
-        const videoName = videoUrlPaths[videoUrlPaths.length-1]
-        try {
-
-            const response = await axios.get('http://localhost:8000/download_video', {
-                params: {
-                    video_name: videoName
-                },
-                responseType: 'blob'
-            })
-            // console.log(response)
-
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', videoName);
-            document.body.appendChild(link);
-            link.click();
-
-        } catch (error) {
-            console.log(error)
-        }
-    }
 </script>
 
 <style scoped>

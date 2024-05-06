@@ -138,6 +138,11 @@ class Yolo5Detect:
 
         area1 = box_area(box1.T)
         area2 = box_area(box2.T)
+        
+        inter = np.min(box1[:, None, 2:], box2[:, 2:]) - np.max(box1[:, None, :2], box2[:, :2])
+        inter = np.maximum(inter, 0)
+        inter = np.prod(inter, 2)
+        return inter / (area1[:, None] + area2 - inter)  # iou = inter / (area1 + area2 - inter)
 
     
     def non_max_suppression(self, prediction, conf_thres=0.25, iou_thres=0.45, classes=None, agnostic=False, multi_label=False,
@@ -306,7 +311,7 @@ class Yolo5Detect:
         cv2.imwrite(save_path, im0)
 
     
-    def detect_and_save_video(self, video_path: str):
+    def detect_and_save_video(self, video_path: str, save_path):
         names = ['hat', 'person']
         colors = [[np.random.randint(0, 255) for _ in range(3)] for _ in names]
 
@@ -316,10 +321,6 @@ class Yolo5Detect:
         w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         cap.release()
-
-        video_name = os.path.basename(video_path)
-        video_name, video_extension = os.path.splitext(video_name)
-        save_path = 'media/'+video_name+'-detected'+video_extension
 
         # 视频写入器
         vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'h264'), fps, (w, h))

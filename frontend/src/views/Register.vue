@@ -1,21 +1,33 @@
 <template>
     <div>
-        <h2>注册</h2>
-        <form @submit.prevent="register">
-            <label for="username">Username:</label>
-            <input type="text" id="username" v-model="username" required>
+        <div class="card-header mt-2">
+            <h3 class="text-center">注册</h3>
+        </div>
+        <div class="card-body">
+            <form  @submit.prevent="register">
+                <div class="form-floating mb-3 mt-3">
+                    <input class="form-control" type="text" id="username" name="username" v-model="username" required placeholder="">
+                    <label for="username">用户名</label>
+                </div>
 
-            <label for="password">Password:</label>
-            <input type="password" id="password" v-model="password" required>
+                <div class="form-floating mb-3 mt-3">
+                    <input class="form-control" type="password" id="password" name="password" v-model="password" required placeholder="">
+                    <label for="password">密码</label>
+                </div>
 
-            <button type="submit">Register</button>
-        </form>
+                <div class="mb-3 mt-3" style="text-align: center;">
+                    <button class="btn btn-primary btn-block btn-lg" type="submit">注册</button>
+                </div>
+            </form>
+        </div>
+
     </div>
 </template>
 
 <script setup lang="ts">
     import {ref} from "vue";
     import axios from "axios";
+    import router from "@/router";
 
     let username = ref('');
     let password = ref('');
@@ -27,13 +39,12 @@
                 username: username.value, password: password.value
             })
 
-            if (response.status === 200) {
+            if (response.status === 201) {
                 alert('注册成功');
-                window.location.href = '/login';
+                await router.push('/login');
             }
         } catch (error) {
             console.error('Error registering user:', error);
-            alert(error.response.data.error);
         }
     }
 </script>

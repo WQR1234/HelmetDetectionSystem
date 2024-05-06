@@ -10,15 +10,15 @@
 
     <div class="input-group">
         <button class="btn btn-success mx-md-auto w-50" @click="detect">开始检测</button>
+<!--        <a class="btn btn-primary mx-auto w-50" :href="imageUrl" :download="download_name()">下载</a>-->
         <button class="btn btn-primary mx-md-auto w-50" @click="download">下载</button>
-        <button class="btn btn-primary mx-md-auto w-50" @click="check">查看登录</button>
     </div>
 
 
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref} from "vue";
+    import {onMounted, ref} from "vue";
     import axios, {type AxiosRequestConfig} from 'axios';
     import {useStore} from "@/store";
 
@@ -34,6 +34,8 @@ import {onMounted, ref} from "vue";
     async function uploadImage() {
         const formData = new FormData()
         formData.append('image', selectedFile)
+        console.log(selectedFile)
+
         const access = localStorage.getItem('access')
         const config: AxiosRequestConfig = {}
         if (store.isLogin) {
@@ -44,8 +46,8 @@ import {onMounted, ref} from "vue";
 
         try {
             const response = await axios.post('http://localhost:8000/upload_image/', formData, config)
-            imageUrl.value = response.data.image_url
-            console.log(imageUrl.value)
+            console.log(response.data)
+            imageUrl.value = store.serverRootUrl + '/' + response.data.image_path
         } catch (error) {
             console.log(error)
         }
@@ -58,21 +60,32 @@ import {onMounted, ref} from "vue";
         }
         const imageName = imageUrlPaths[imageUrlPaths.length-1]
 
+        const access = localStorage.getItem('access')
+        const config: AxiosRequestConfig = {}
+        config.params = {
+            image_name: imageName
+        }
+        if (store.isLogin) {
+            config.headers = {
+                Authorization: `Bearer ${access}`,
+            }
+        }
+
         try {
 
-            const response = await axios.get('http://localhost:8000/detect_image', {
-                params: {
-                    image_name: imageName
-                }
-            })
+            const response = await axios.get('http://localhost:8000/detect_image', config)
             console.log(response.data)
-            imageUrl.value = response.data.detected_path
+            imageUrl.value = store.serverRootUrl + '/' + response.data.detected_path
         } catch (error) {
             console.log(error)
+
         }
     }
 
+
     async function download() {
+        // 跨域下载
+
         const imageUrlPaths = imageUrl.value.split('/')
         if (imageUrlPaths.length===0) {
             return
@@ -80,10 +93,7 @@ import {onMounted, ref} from "vue";
         const imageName = imageUrlPaths[imageUrlPaths.length-1]
         try {
 
-            const response = await axios.get('http://localhost:8000/download_image', {
-                params: {
-                    image_name: imageName
-                },
+            const response = await axios.get(imageUrl.value, {
                 responseType: 'blob'
             })
             // console.log(response)
@@ -92,8 +102,10 @@ import {onMounted, ref} from "vue";
             const link = document.createElement('a');
             link.href = url;
             link.setAttribute('download', imageName);
+            link.target = '_blank';
             document.body.appendChild(link);
             link.click();
+            link.remove();
 
         } catch (error) {
             console.log(error)

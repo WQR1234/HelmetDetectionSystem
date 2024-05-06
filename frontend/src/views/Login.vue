@@ -1,15 +1,26 @@
 <template>
     <div>
-        <h2>登录</h2>
-        <form @submit.prevent="login">
-            <label for="username">Username:</label>
-            <input type="text" id="username" v-model="username" required>
+        <div class="card-header mt-2">
+            <h3 class="text-center">登录</h3>
+        </div>
+        <div class="card-body">
+            <form  @submit.prevent="login">
+                <div class="form-floating mb-3 mt-3">
+                    <input class="form-control" type="text" id="username" name="username" v-model="username" required placeholder="">
+                    <label for="username">用户名</label>
+                </div>
 
-            <label for="password">Password:</label>
-            <input type="password" id="password" v-model="password" required>
+                <div class="form-floating mb-3 mt-3">
+                    <input class="form-control" type="password" id="password" name="password" v-model="password" required placeholder="">
+                    <label for="password">密码</label>
+                </div>
 
-            <button type="submit">登录</button>
-        </form>
+                <div class="mb-3 mt-3" style="text-align: center;">
+                    <button class="btn btn-primary btn-block btn-lg" type="submit">登录</button>
+                </div>
+
+            </form>
+        </div>
     </div>
 </template>
 

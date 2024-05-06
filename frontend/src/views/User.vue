@@ -1,10 +1,29 @@
 <template>
-    <h2>上传的图片</h2>
+    <h3>上传的图片</h3>
     <hr>
-    <div class="card" v-for="(item, idx) in imageList" :key="item.id">
-        <img class="card-img-top" :src="item.image_url" alt="Card image">
-        <div class="card-body">
-            <button class="btn btn-primary" @click="detect_image(item.image_url, idx)">{{ imageState[idx] ? '查看原图' : '查看检测结果'}}</button>
+    <div class="row mt-md-3" v-for="(item, idx) in imageList" :key="item.id">
+        <div class="col-md-5 mx-auto">
+            <div class="card" >
+                <img class="card-img-top" :src="store.serverRootUrl+'/'+item.image_path" alt="Card image">
+                <div class="card-body">
+                    <button class="btn btn-primary" @click="detect_image(idx)" >{{ imageState[idx] ? '查看原图' : '查看检测结果'}}</button>
+                    <button class="btn btn-primary mx-3" @click="del_image(idx)">移除图片</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3>上传的视频</h3>
+    <hr>
+    <div class="row mt-md-3" v-for="(item, idx) in videoList" :key="item.id">
+        <div class="col-md-5 mx-auto">
+            <div class="card">
+                <video class="card-img-top" :src="store.serverRootUrl+'/'+item.video_path" controls autoplay loop/>
+                <div class="card-body">
+                    <button class="btn btn-primary" @click="detect_video(idx)" :disabled="videoState[idx]==1">{{ videoStateText[videoState[idx]] }}</button>
+                    <button class="btn btn-primary mx-3" @click="del_video(idx)">移除视频</button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -12,11 +31,29 @@
 <script setup lang="ts">
     import {onMounted, reactive} from "vue";
     import  {useStore} from "@/store";
-    import axios from "axios";
+    import axios, {type AxiosRequestConfig} from "axios";
     import router from "@/router";
 
-    const imageList = reactive([])
-    const imageState = reactive([])
+    interface Image {
+        id: number;
+        user: number;
+        image_name: string;
+        image_path: string;
+    }
+    
+    interface Video {
+        id: number;
+        user: number;
+        video_name: string;
+        video_path: string;
+    }
+
+    const imageList = reactive<Image[]>([])
+    const imageState = reactive<boolean[]>([])
+
+    const videoList = reactive<Video[]>([])
+    const videoState = reactive<number[]>([])
+    const videoStateText = ['查看检测结果', '检测中...', '查看原视频']
 
     const store = useStore()
 
@@ -35,34 +72,118 @@
             imageState.push(...Array(response.data.length).fill(false))
         } catch (error) {
             await router.push('/login')
+            return
+        }
+
+        try {
+            const response = await axios.get(store.serverRootUrl+'/get_videos/', {
+                headers: {
+                    Authorization: `Bearer ${access}`,
+                }
+            })
+
+            console.log(response.data)
+            videoList.push(...response.data)
+            videoState.push(...Array(response.data.length).fill(0))
+        } catch (error) {
+            await router.push('/login')
         }
     })
 
-    async function detect_image(image_url: string, idx: number) {
+    async function detect_image(idx: number) {
         if (imageState[idx]) {
-            const [pureName, suffixName] = image_url.split('.')
-            let originName = pureName.slice(0, -9)  // 删除末尾的-detected
-            originName += '.'+suffixName
-
-            imageList[idx].image_url = originName
-            imageState[idx] = false
+            imageList[idx].image_path = imageList[idx].image_path.replace('/detected/', '/origin/');
+            imageState[idx] = false;
             return
         }
-        const imageUrlPaths = image_url.split('/')
-        const imageName = imageUrlPaths[imageUrlPaths.length-1];
-        // const [pureName, suffixName] = imageName.split('.')
-        // console.log(pureName, suffixName)
+
+        const imageName = imageList[idx].image_name
+
+        const access = localStorage.getItem('access')
+        const config: AxiosRequestConfig = {}
+        config.params = {
+            image_name: imageName
+        }
+        if (store.isLogin) {
+            config.headers = {
+                Authorization: `Bearer ${access}`,
+            }
+        }
 
         try {
-            const response = await axios.get(store.serverRootUrl+'/detect_image', {
-                params: {
-                    image_name: imageName
-                }
-            });
+            const response = await axios.get(store.serverRootUrl+'/detect_image', config);
 
             console.log(response.data)
-            imageList[idx].image_url = response.data.detected_path
+            imageList[idx].image_path = response.data.detected_path
             imageState[idx] = true
+        } catch (error) {
+
+        }
+    }
+
+    async function detect_video(idx: number) {
+        if (videoState[idx]===2) {
+            videoList[idx].video_path = videoList[idx].video_path.replace('/detected/', '/origin/');
+            videoState[idx] = 0;
+            return
+        }
+
+        videoState[idx] = 1
+        const videoName = videoList[idx].video_name
+
+        const access = localStorage.getItem('access')
+        const config: AxiosRequestConfig = {}
+        config.params = {
+            video_name: videoName
+        }
+        if (store.isLogin) {
+            config.headers = {
+                Authorization: `Bearer ${access}`,
+            }
+        }
+
+        try {
+            const response = await axios.get(store.serverRootUrl+'/detect_video', config);
+
+            console.log(response.data)
+            videoList[idx].video_path = response.data.detected_path
+            videoState[idx] = 2
+        } catch (error) {
+
+        }
+    }
+
+    async function del_image(idx: number) {
+        const image_id = imageList[idx].id
+
+        const access = localStorage.getItem('access')
+        try {
+            const response = await axios.delete(`${store.serverRootUrl}/delete_image/${image_id}`, {
+                headers: {
+                    Authorization: `Bearer ${access}`,
+                }
+            })
+
+            imageList.splice(idx, 1)
+            imageState.splice(idx, 1)
+        } catch (error) {
+
+        }
+    }
+
+    async function del_video(idx: number) {
+        const video_id = videoList[idx].id
+
+        const access = localStorage.getItem('access')
+        try {
+            const response = await axios.delete(`${store.serverRootUrl}/delete_video/${video_id}`, {
+                headers: {
+                    Authorization: `Bearer ${access}`,
+                }
+            })
+
+            videoList.splice(idx, 1)
+            videoState.splice(idx, 1)
         } catch (error) {
 
         }
@@ -71,9 +192,5 @@
 </script>
 
 <style scoped>
-    .card {
-        float: left;
-        width: 200px;
-        margin-right: 20px;
-    }
+
 </style>
