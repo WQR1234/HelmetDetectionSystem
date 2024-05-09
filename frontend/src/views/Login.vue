@@ -1,37 +1,103 @@
 <template>
-    <div>
-        <div class="card-header mt-2">
-            <h3 class="text-center">登录</h3>
-        </div>
-        <div class="card-body">
-            <form  @submit.prevent="login">
-                <div class="form-floating mb-3 mt-3">
-                    <input class="form-control" type="text" id="username" name="username" v-model="username" required placeholder="">
-                    <label for="username">用户名</label>
-                </div>
+    <div class="sub-content">
 
-                <div class="form-floating mb-3 mt-3">
-                    <input class="form-control" type="password" id="password" name="password" v-model="password" required placeholder="">
-                    <label for="password">密码</label>
+        <el-card>
+            <template #header>
+                <div class="card-header text-light text-center">
+                    <span>登录</span>
                 </div>
+            </template>
+            <el-form
+                ref="loginFormRef"
+                style="max-width: 600px"
+                :model="loginForm"
+                status-icon
+                label-width="auto"
 
-                <div class="mb-3 mt-3" style="text-align: center;">
-                    <button class="btn btn-primary btn-block btn-lg" type="submit">登录</button>
-                </div>
+            >
 
-            </form>
-        </div>
+                <el-form-item label="用户名" prop="username" required>
+                    <el-input
+                        v-model="loginForm.username"
+                        type="text"
+                        autocomplete="off"
+
+                    />
+                </el-form-item>
+                <el-form-item label="密码" prop="password" required>
+                    <el-input v-model="loginForm.password" type="password" autocomplete="off" show-password/>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="submitForm(loginFormRef)">
+                        提交
+                    </el-button>
+                    <el-button @click="resetForm(loginFormRef)">清空</el-button>
+                </el-form-item>
+
+            </el-form>
+        </el-card>
+
     </div>
 </template>
 
 <script setup lang="ts">
-    import {ref} from "vue";
+    import {reactive, ref} from "vue";
     import axios from "axios";
     import {useStore} from "@/store";
     import router from "@/router";
+    import type {FormInstance, FormRules} from "element-plus";
+    import {ElMessage} from "element-plus";
 
     const store = useStore();
 
+    const loginFormRef = ref<FormInstance>()
+    const loginForm = reactive({
+        username: '',
+        password: '',
+    })
+
+    const submitForm = (formEl: FormInstance | undefined) => {
+        if (!formEl) return
+        formEl.validate(async (valid) => {
+            if (valid) {
+                const data = new FormData();
+                data.append('username', loginForm.username);
+                data.append('password', loginForm.password);
+
+                try {
+                    const response = await axios.post('http://localhost:8000/token/', data)
+
+                    console.log(response)
+                    if (response.status === 200) {
+                        ElMessage({
+                            message: '登录成功',
+                            type: 'success',
+                        })
+                        store.isLogin = true;
+                        localStorage.setItem('access', response.data['access']);
+                        localStorage.setItem('refresh', response.data['refresh']);
+                        await router.push('/image');
+                    }
+                } catch (error) {
+                    console.error('Error registering user:', error);
+                    ElMessage({
+                        message: '用户名或密码错误',
+                        type: 'warning',
+                    })
+                }
+
+            } else {
+                console.log('error submit!')
+                ElMessage.error('用户名或密码不能为空')
+            }
+        })
+    }
+
+    const resetForm = (formEl: FormInstance | undefined) => {
+        if (!formEl) return
+        console.log(formEl)
+        formEl.resetFields()
+    }
 
     let username = ref('');
     let password = ref('');
@@ -61,5 +127,20 @@
 </script>
 
 <style scoped>
+    .sub-content {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom right, #545c64 20%, #685e48);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .el-card {
+            border: 1px solid white;
+            background-color: transparent;
+            :deep .el-form-item__label {
+                color: white;
+            }
+        }
 
+    }
 </style>

@@ -15,27 +15,27 @@ __all__ = ['upload_video', 'detect_video']
 @api_view(['POST'])
 def upload_video(request: HttpRequest):
     if request.method == 'POST':
-        img = request.FILES.get('video')
+        vid = request.FILES.get('video')
 
         user = request.user
         if not user.username:
-            img_path = 'media/videos/origin/'+img.name
-            if os.path.exists(img_path):
-                img_path += '_'
-            with open(img_path, 'wb') as f:
-                for chunk in img.chunks():
+            vid_path = 'media/videos/origin/'+vid.name
+            if os.path.exists(vid_path):
+                vid_path += '_'
+            with open(vid_path, 'wb') as f:
+                for chunk in vid.chunks():
                     f.write(chunk)
             
-            return JsonResponse({'video_path': img_path})
+            return JsonResponse({'video_path': vid_path})
         else:
-            img_path = f'media/videos/{user.id}/origin/{img.name}'
-            with open(img_path, 'wb') as f:
-                for chunk in img.chunks():
+            vid_path = f'media/videos/{user.id}/origin/{vid.name}'
+            with open(vid_path, 'wb') as f:
+                for chunk in vid.chunks():
                     f.write(chunk)
             
             video_data = {
                 'user': user.id,
-                'video_name': img.name
+                'video_name': vid.name
             }
             serializer = VideoSerializer(data=video_data)
             if serializer.is_valid():
