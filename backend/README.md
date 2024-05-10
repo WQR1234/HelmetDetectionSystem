@@ -12,3 +12,6 @@ pip install -r requirements.txt
 ```
 python manage.py runserver
 ```
+
+
+已有用户名：甲，  密码： 123
