@@ -75,7 +75,6 @@
     async function handleRequest(option: UploadRequestOptions) {
         const formData = new FormData()
         formData.append('image', option.file)
-        console.log(option.file)
 
         const access = localStorage.getItem('access')
         const config: AxiosRequestConfig = {}
@@ -92,27 +91,6 @@
             console.log(error)
         }
 
-    }
-
-    async function handleUpload(file: UploadFile) {
-        const formData = new FormData()
-        formData.append('image', file.raw as File)
-        console.log(formData)
-
-        const access = localStorage.getItem('access')
-        const config: AxiosRequestConfig = {}
-        if (store.isLogin) {
-            config.headers = {
-                Authorization: `Bearer ${access}`,
-            }
-        }
-
-        try {
-            const response = await axios.post('http://localhost:8000/upload_image/', formData, config)
-            console.log(response.data)
-        } catch (error) {
-            console.log(error)
-        }
     }
 
     const handleRemove = (file: UploadFile) => {
@@ -178,62 +156,6 @@
     let selectedFile: File | null = null
     let imageUrl = ref('')
     const store = useStore()
-
-    function handleFileChange(evt) {
-        selectedFile = evt.target.files[0]
-        console.log(selectedFile);
-    }
-
-    async function uploadImage() {
-        const formData = new FormData()
-        formData.append('image', selectedFile)
-        console.log(selectedFile)
-
-        const access = localStorage.getItem('access')
-        const config: AxiosRequestConfig = {}
-        if (store.isLogin) {
-            config.headers = {
-                Authorization: `Bearer ${access}`,
-            }
-        }
-
-        try {
-            const response = await axios.post('http://localhost:8000/upload_image/', formData, config)
-            console.log(response.data)
-            imageUrl.value = store.serverRootUrl + '/' + response.data.image_path
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    async function detect() {
-        const imageUrlPaths = imageUrl.value.split('/')
-        if (imageUrlPaths.length===0) {
-            return
-        }
-        const imageName = imageUrlPaths[imageUrlPaths.length-1]
-
-        const access = localStorage.getItem('access')
-        const config: AxiosRequestConfig = {}
-        config.params = {
-            image_name: imageName
-        }
-        if (store.isLogin) {
-            config.headers = {
-                Authorization: `Bearer ${access}`,
-            }
-        }
-
-        try {
-
-            const response = await axios.get('http://localhost:8000/detect_image', config)
-            console.log(response.data)
-            imageUrl.value = store.serverRootUrl + '/' + response.data.detected_path
-        } catch (error) {
-            console.log(error)
-
-        }
-    }
 
 
     async function handle_download() {

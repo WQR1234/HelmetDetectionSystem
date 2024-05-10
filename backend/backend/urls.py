@@ -49,6 +49,8 @@ urlpatterns = [
     path('delete_image/<int:image_id>/', delete_image),
     path('delete_video/<int:video_id>/', delete_video),
 
+    path('check_camera/', views.check_camera),
+
     re_path('media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT}, 'media')
 
 ]

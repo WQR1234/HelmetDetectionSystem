@@ -9,7 +9,7 @@
             </template>
             <el-form
                 ref="loginFormRef"
-                style="max-width: 600px"
+                style="width: 300px"
                 :model="loginForm"
                 status-icon
                 label-width="auto"
@@ -32,6 +32,7 @@
                         提交
                     </el-button>
                     <el-button @click="resetForm(loginFormRef)">清空</el-button>
+                    <el-button @click="turnImage">暂不登录</el-button>
                 </el-form-item>
 
             </el-form>
@@ -99,31 +100,11 @@
         formEl.resetFields()
     }
 
-    let username = ref('');
-    let password = ref('');
-
-
-    async function login() {
-        const data = new FormData();
-        data.append('username', username.value);
-        data.append('password', password.value);
-
-        try {
-            const response = await axios.post('http://localhost:8000/token/', data)
-
-            console.log(response)
-            if (response.status === 200) {
-                alert('登录成功');
-                store.isLogin = true;
-                localStorage.setItem('access', response.data['access']);
-                localStorage.setItem('refresh', response.data['refresh']);
-                await router.push('/image');
-            }
-        } catch (error) {
-            console.error('Error registering user:', error);
-            alert(error.response.data.error);
-        }
+    function turnImage() {
+        router.push('/image')
     }
+
+    
 </script>
 
 <style scoped>

@@ -59,7 +59,7 @@
                     <el-icon><VideoCamera /></el-icon>
                     <span>视频检测</span>
                 </el-menu-item>
-                <el-menu-item index="4" disabled>
+                <el-menu-item index="/camera" :disabled="!openCamera">
                     <el-icon><Camera /></el-icon>
                     <span>打开摄像头</span>
                 </el-menu-item>
@@ -101,7 +101,7 @@
 <script setup lang="ts">
     import {RouterView, RouterLink} from 'vue-router'
     import  {useStore} from "@/store";
-    import {onMounted} from "vue";
+    import {onMounted, ref} from "vue";
     import axios from "axios";
     import router from "@/router";
 
@@ -113,6 +113,8 @@
     } from '@element-plus/icons-vue'
 
     const store = useStore()
+
+    const openCamera = ref(false)
 
     onMounted( async ()=>{
         const access = localStorage.getItem('access')
@@ -129,9 +131,20 @@
             }
             else {
                 console.log('未登录！！！')
+
             }
         } catch (error) {
             console.error('Error checking login status:', error);
+            await router.push('/login')
+        }
+
+        try {
+            const response = await axios.get(store.serverRootUrl+'/check_camera/')
+            if (response.data.camera_open) {
+                openCamera.value = true
+            }
+        } catch (e) {
+
         }
     })
 

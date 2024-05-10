@@ -5,6 +5,7 @@ import VideoDetect from "@/views/VideoDetect.vue";
 import Register from "@/views/Register.vue";
 import Login from "@/views/Login.vue";
 import User from "@/views/User.vue";
+import Camera from "@/views/Camera.vue";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -30,6 +31,10 @@ const router = createRouter({
             path: '/user',
             component: User
         },
+        {
+            path: '/camera',
+            component: Camera
+        }
     ]
 })
 

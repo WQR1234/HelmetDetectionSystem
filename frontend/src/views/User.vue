@@ -1,31 +1,55 @@
 <template>
-    <h3>上传的图片</h3>
-    <hr>
-    <div class="row mt-md-3" v-for="(item, idx) in imageList" :key="item.id">
-        <div class="col-md-5 mx-auto">
-            <div class="card" >
-                <img class="card-img-top" :src="store.serverRootUrl+'/'+item.image_path" alt="Card image">
-                <div class="card-body">
-                    <button class="btn btn-primary" @click="detect_image(idx)" >{{ imageState[idx] ? '查看原图' : '查看检测结果'}}</button>
-                    <button class="btn btn-primary mx-3" @click="del_image(idx)">移除图片</button>
-                </div>
-            </div>
-        </div>
+<!--    <h3>上传的图片</h3>-->
+<!--    <hr>-->
+<!--    <div class="row mt-md-3" v-for="(item, idx) in imageList" :key="item.id">-->
+<!--        <div class="col-md-5 mx-auto">-->
+<!--            <div class="card" >-->
+<!--                <img class="card-img-top" :src="store.serverRootUrl+'/'+item.image_path" alt="Card image">-->
+<!--                <div class="card-body">-->
+<!--                    <button class="btn btn-primary" @click="detect_image(idx)" >{{ imageState[idx] ? '查看原图' : '查看检测结果'}}</button>-->
+<!--                    <button class="btn btn-primary mx-3" @click="del_image(idx)">移除图片</button>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+    <div class="sub-content">
+        <el-scrollbar height="400px">
+
+            <el-card v-for="(item, idx) in imageList" :key="item.id" >
+                <img
+                    :src="store.serverRootUrl+'/'+item.image_path"
+                    alt="Card image"
+                    style=" width: 100%"
+                />
+                <template #footer>
+                    <el-button type="primary" plain @click="detect_image(idx)">{{ imageState[idx] ? '查看原图' : '查看检测结果'}}</el-button>
+                    <el-button type="warning" plain @click="del_image(idx)">移除图片</el-button>
+                </template>
+            </el-card>
+
+        </el-scrollbar>
     </div>
 
-    <h3>上传的视频</h3>
-    <hr>
-    <div class="row mt-md-3" v-for="(item, idx) in videoList" :key="item.id">
-        <div class="col-md-5 mx-auto">
-            <div class="card">
-                <video class="card-img-top" :src="store.serverRootUrl+'/'+item.video_path" controls autoplay loop/>
-                <div class="card-body">
-                    <button class="btn btn-primary" @click="detect_video(idx)" :disabled="videoState[idx]==1">{{ videoStateText[videoState[idx]] }}</button>
-                    <button class="btn btn-primary mx-3" @click="del_video(idx)">移除视频</button>
-                </div>
-            </div>
-        </div>
+    <div class="sub-content">
+        <el-scrollbar height="400px">
+
+            <el-card v-for="(item, idx) in videoList" :key="item.id" >
+                <video class="w-100" :src="store.serverRootUrl+'/'+item.video_path" controls autoplay loop/>
+                <template #footer>
+                    <el-button type="primary" plain @click="detect_video(idx)"
+                               :disabled="videoState[idx]==1"
+                               :loading="videoState[idx]==1"
+                    >{{ videoStateText[videoState[idx]] }}
+                    </el-button>
+                    <el-button type="warning" plain @click="del_video(idx)">移除视频</el-button>
+                </template>
+            </el-card>
+
+        </el-scrollbar>
     </div>
+
+
 </template>
 
 <script setup lang="ts">
@@ -70,6 +94,8 @@
             console.log(response.data)
             imageList.push(...response.data)
             imageState.push(...Array(response.data.length).fill(false))
+
+            console.log(imageList)
         } catch (error) {
             await router.push('/login')
             return
@@ -192,5 +218,12 @@
 </script>
 
 <style scoped>
+    .sub-content {
+        margin-left: 25%;
+        margin-top: 30px;
+        width: 50%;
+        justify-content: center;
+        align-items: center;
+    }
 
 </style>

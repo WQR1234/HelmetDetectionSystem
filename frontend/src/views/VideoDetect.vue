@@ -13,28 +13,40 @@
 <!--&lt;!&ndash;        <button class="btn btn-primary mx-md-auto w-50" @click="download">下载</button>&ndash;&gt;-->
 <!--    </div>-->
 
-    <el-upload
-        ref="upload"
-        class="upload-video"
-        drag
-        :auto-upload="false"
-        :limit="1"
-        :on-exceed="handleExceed"
-    >
-        <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
-        <div class="el-upload__text">
-            Drop file here or <em>click to upload</em>
-        </div>
-        <template #tip>
-            <div class="el-upload__tip">
-                video files with a size less than 25MB
-            </div>
-        </template>
+    <div class="upload-video">
+        <el-upload
+            ref="upload"
 
-        <el-button class="ml-3" type="success" @click="submitUpload">
-            upload to server
-        </el-button>
-    </el-upload>
+            drag
+            :auto-upload="false"
+            :limit="1"
+            :on-exceed="handleExceed"
+            :http-request="handleRequest"
+        >
+            <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
+            <div class="el-upload__text">
+                Drop file here or <em>click to upload</em>
+            </div>
+            <template #tip>
+                <div class="el-upload__tip">
+                    video files with a size less than 25MB
+                </div>
+                <el-button class="mt-3" type="success" @click="submitUpload">
+                    上传至服务器
+                </el-button>
+            </template>
+
+        </el-upload>
+    </div>
+
+    <div class="detected-video">
+        <video v-if="videoUrl" :src="videoUrl" style="width: 100%; height: 100%" controls autoplay loop></video>
+    </div>
+
+    <div class="detected-btn">
+        <el-button type="primary"  :loading="detectState" @click="detect">{{ detectStateText }}</el-button>
+    </div>
+
 
 </template>
 
@@ -43,7 +55,7 @@
     import axios, {type AxiosRequestConfig} from 'axios';
     import {useStore} from "@/store";
     import { UploadFilled } from '@element-plus/icons-vue'
-    import type {UploadFile, UploadInstance, UploadProps, UploadRawFile} from "element-plus";
+    import type {UploadFile, UploadInstance, UploadProps, UploadRawFile, UploadRequestOptions} from "element-plus";
     import {genFileId} from "element-plus";
 
     const store = useStore()
@@ -68,35 +80,9 @@
     let detectStateText = ref('开始检测')
     let detectState = ref(false)
 
-    function handleFileChange(evt) {
-        selectedFile = evt.target.files[0]
-        console.log(selectedFile);
-    }
-
-    async function handleUpload(file: UploadFile) {
+    async function handleRequest(options: UploadRequestOptions) {
         const formData = new FormData()
-        formData.append('video', file.raw as File)
-
-        const access = localStorage.getItem('access')
-        const config: AxiosRequestConfig = {}
-        if (store.isLogin) {
-            config.headers = {
-                Authorization: `Bearer ${access}`,
-            }
-        }
-
-        try {
-            const response = await axios.post('http://localhost:8000/upload_video/', formData, config)
-            videoUrl.value = store.serverRootUrl + '/' + response.data.video_path
-            console.log(videoUrl.value)
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    async function uploadVideo() {
-        const formData = new FormData()
-        formData.append('video', selectedFile)
+        formData.append('video', options.file)
 
         const access = localStorage.getItem('access')
         const config: AxiosRequestConfig = {}
@@ -153,16 +139,25 @@
 </script>
 
 <style scoped>
-    .detected-video {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 80%;
-    }
-
     .upload-video {
         width: 84%;
+        height: 200px;
         margin-left: 8%;
         margin-top: 40px;
+    }
+
+    .detected-video {
+        width: 70%;
+        margin-left: 15%;
+        margin-top: 20px;
+        height: 40%;
+
+        box-shadow: var(--el-box-shadow-dark);
+    }
+
+    .detected-btn {
+        width: 100px;
+        margin-left: 15%;
+        height: 50px;
     }
 </style>
