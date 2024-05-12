@@ -1,46 +1,7 @@
 <template>
 
-<!--      <div class="container-fluid flex-md-wrap">-->
-<!--            <div class="row mt-3">-->
-<!--                <h2 class="text-center">安全帽检测</h2>-->
-<!--            </div>-->
-
-
-<!--            <div class="row mt-3" style="height: 600px">-->
-<!--                  <div class="col-md-3">-->
-
-<!--                        <ul class="nav nav-pills nav-justified flex-column text-center">-->
-<!--                            <li class="nav-item mt-2 mb-2">-->
-<!--                                <RouterLink class="nav-link" to="/image" active-class="nav-link active">图片检测</RouterLink>-->
-<!--                            </li>-->
-<!--                            <li class="nav-item mt-2 mb-2">-->
-<!--                                <RouterLink class="nav-link" to="/video" active-class="nav-link active">视频检测</RouterLink>-->
-<!--                            </li>-->
-
-<!--                            <li class="nav-item mt-2 mb-2" v-if="!store.isLogin">-->
-<!--                                <RouterLink class="nav-link" to="/register" active-class="nav-link active">注册</RouterLink>-->
-<!--                            </li>-->
-<!--                            <li class="nav-item mt-2 mb-2" v-if="!store.isLogin">-->
-<!--                                <RouterLink class="nav-link" to="/login" active-class="nav-link active">登录</RouterLink>-->
-<!--                            </li>-->
-
-<!--                            <li class="nav-item mt-2 mb-2" v-if="store.isLogin">-->
-<!--                                <RouterLink class="nav-link" to="/user" active-class="nav-link active">我的</RouterLink>-->
-<!--                            </li>-->
-<!--                            <li class="nav-item mt-2 mb-2" v-if="store.isLogin">-->
-<!--                                <button class="nav-link" @click="logout">退出登录</button>-->
-<!--                            </li>-->
-<!--                        </ul>-->
-
-<!--                  </div>-->
-<!--                  <div class="col-md-7 bg-info">-->
-<!--                      <RouterView></RouterView>-->
-<!--                  </div>-->
-<!--            </div>-->
-<!--      </div>-->
-
     <el-row class="total">
-        <el-col :span="4" class="left-menu">
+        <el-col :span="4" class="left-menu" v-if="showLeft">
             <h5 class="mb-4 mt-4 text-center text-light">安全帽检测</h5>
 
             <el-menu
@@ -66,7 +27,7 @@
             </el-menu>
 
         </el-col>
-        <el-col :span="20">
+        <el-col :span="rightSize">
             <el-row class="head">
                 <el-menu
 
@@ -86,7 +47,8 @@
                         </template>
                         <el-menu-item index="/login" v-if="!store.isLogin">登录</el-menu-item>
                         <el-menu-item index="/register" v-if="!store.isLogin">注册</el-menu-item>
-                        <el-menu-item index="/user" v-if="store.isLogin">我的</el-menu-item>
+                        <el-menu-item index="/user" v-if="store.isLogin">我的上传</el-menu-item>
+                        <el-menu-item index="/userinfo" v-if="store.isLogin">我的信息</el-menu-item>
                         <el-menu-item index="" v-if="store.isLogin" @click="logout">退出登录</el-menu-item>
                     </el-sub-menu>
                 </el-menu>
@@ -99,60 +61,77 @@
 </template>
 
 <script setup lang="ts">
-    import {RouterView, RouterLink} from 'vue-router'
-    import  {useStore} from "@/store";
-    import {onMounted, ref} from "vue";
-    import axios from "axios";
-    import router from "@/router";
+import {RouterView, RouterLink, onBeforeRouteUpdate} from 'vue-router'
+import  {useStore} from "@/store";
+import {onMounted, provide, ref, watch} from "vue";
+import axios from "axios";
+import router from "@/router";
+import {useRoute} from "vue-router";
 
-    import {
-        Picture,
-        VideoCamera,
-        Camera,
-        User,
-    } from '@element-plus/icons-vue'
+import {
+    Picture,
+    VideoCamera,
+    Camera,
+    User,
+} from '@element-plus/icons-vue'
 
-    const store = useStore()
+const store = useStore()
 
-    const openCamera = ref(false)
+const openCamera = ref(false)
 
-    onMounted( async ()=>{
-        const access = localStorage.getItem('access')
-        try {
-            const response = await axios.get(store.serverRootUrl+'/check_login/', {
-                headers: {
-                    Authorization: `Bearer ${access}`,
-                }
-            });
-            console.log(response)
-            if (response.data.username) {
-                store.isLogin = true; // 如果后端返回已登录状态，更新前端的登录状态
-                console.log('已登录')
-            }
-            else {
-                console.log('未登录！！！')
+const showLeft = ref(true)
+const rightSize = ref(20)
+// provide('showLeft', showLeft)
 
-            }
-        } catch (error) {
-            console.error('Error checking login status:', error);
-            await router.push('/login')
-        }
-
-        try {
-            const response = await axios.get(store.serverRootUrl+'/check_camera/')
-            if (response.data.camera_open) {
-                openCamera.value = true
-            }
-        } catch (e) {
-
-        }
-    })
-
-    function logout() {
-        localStorage.clear()
-        store.isLogin = false
-        router.push('/image')
+const route = useRoute()
+watch(route, (to, from)=>{
+    if (to.name === 'login' || to.name === 'register') {
+        showLeft.value = false
+        rightSize.value = 24
+    } else {
+        showLeft.value = true
+        rightSize.value = 20
     }
+})
+
+
+onMounted( async ()=>{
+    const access = localStorage.getItem('access')
+    try {
+        const response = await axios.get(store.serverRootUrl+'/check_login/', {
+            headers: {
+                Authorization: `Bearer ${access}`,
+            }
+        });
+
+        if (response.data.username) {
+            store.isLogin = true; // 如果后端返回已登录状态，更新前端的登录状态
+            console.log('已登录')
+        }
+        else {
+            console.log('未登录！！！')
+
+        }
+    } catch (error) {
+        console.error('Error checking login status:', error);
+        await router.push('/login')
+    }
+
+    try {
+        const response = await axios.get(store.serverRootUrl+'/check_camera/')
+        if (response.data.camera_open) {
+            openCamera.value = true
+        }
+    } catch (e) {
+
+    }
+})
+
+function logout() {
+    localStorage.clear()
+    store.isLogin = false
+    router.push('/image')
+}
 
 </script>
 

@@ -9,7 +9,7 @@
             </template>
             <el-form
                 ref="registerFormRef"
-                style="max-width: 600px"
+                style="width: 300px"
                 :model="registerForm"
                 status-icon
                 label-width="auto"
@@ -27,6 +27,19 @@
                 <el-form-item label="密码" prop="password" required>
                     <el-input v-model="registerForm.password" type="password" autocomplete="off" show-password/>
                 </el-form-item>
+                <el-form-item label="邮箱" prop="email">
+                    <el-input v-model="registerForm.email" type="text" autocomplete="off"/>
+                </el-form-item>
+                <el-form-item label="年龄" prop="age">
+                    <el-input v-model="registerForm.age" type="number" autocomplete="off"/>
+                </el-form-item>
+                <el-form-item label="性别" prop="gender">
+                    <el-input v-model="registerForm.gender" type="text" autocomplete="off"/>
+                </el-form-item>
+                <el-form-item label="电话" prop="phone_number">
+                    <el-input v-model="registerForm.phone_number" type="text" autocomplete="off"/>
+                </el-form-item>
+
                 <el-form-item>
                     <el-button type="primary" @click="submitForm(registerFormRef)">
                         提交
@@ -55,6 +68,11 @@ const registerFormRef = ref<FormInstance>()
 const registerForm = reactive({
     username: '',
     password: '',
+    email: '',
+    age: '',
+    gender: '',
+    phone_number:'',
+
 })
 
 const submitForm = (formEl: FormInstance | undefined) => {
@@ -62,11 +80,13 @@ const submitForm = (formEl: FormInstance | undefined) => {
     formEl.validate(async (valid) => {
         if (valid) {
             const data = new FormData();
-            data.append('username', registerForm.username);
-            data.append('password', registerForm.password);
+            for (let key in registerForm) {
+                data.append(key, registerForm[key])
+            }
+
 
             try {
-                const response = await axios.post('http://localhost:8000/token/', data)
+                const response = await axios.post('http://localhost:8000/register/', data)
 
                 console.log(response)
                 if (response.status === 201) {
@@ -79,7 +99,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
                 }
             } catch (error) {
                 console.error('Error registering user:', error);
-
+                ElMessage.error('用户名已存在')
             }
 
         } else {

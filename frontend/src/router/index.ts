@@ -6,6 +6,7 @@ import Register from "@/views/Register.vue";
 import Login from "@/views/Login.vue";
 import User from "@/views/User.vue";
 import Camera from "@/views/Camera.vue";
+import UserInfo from "@/views/UserInfo.vue";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -21,10 +22,12 @@ const router = createRouter({
 
         {
             path: '/register',
+            name:'register',
             component: Register
         },
         {
             path: '/login',
+            name: 'login',
             component: Login
         },
         {
@@ -34,7 +37,12 @@ const router = createRouter({
         {
             path: '/camera',
             component: Camera
-        }
+        },
+        {
+            path: '/userinfo',
+            component: UserInfo
+        },
+
     ]
 })
 

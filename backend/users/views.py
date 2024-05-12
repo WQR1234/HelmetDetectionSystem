@@ -6,7 +6,9 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import UserRegisterSerializer
+from django.contrib.auth.models import User
+
+from .serializers import UserRegisterSerializer, UserInfoSerializer
 from HelmetDetection.serializers import ImageSerializer, VideoSerializer
 from HelmetDetection.models import Image, Video
 
@@ -35,12 +37,9 @@ class UserRegisterAPIView(APIView):
 def get_user_info(request):
     user = request.user
     # print(user.images.all())
-    user_info = {
-        'id': user.id,
-        'username': user.username,
-        # 其他用户信息
-    }
-    return Response(user_info, status=status.HTTP_200_OK)
+    query = User.objects.get(id=user.id)
+    serializer = UserInfoSerializer(query)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

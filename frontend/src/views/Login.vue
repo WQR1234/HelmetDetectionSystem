@@ -77,7 +77,7 @@
                         store.isLogin = true;
                         localStorage.setItem('access', response.data['access']);
                         localStorage.setItem('refresh', response.data['refresh']);
-                        await router.push('/image');
+                        await router.push('/image')
                     }
                 } catch (error) {
                     console.error('Error registering user:', error);
