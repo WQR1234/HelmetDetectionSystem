@@ -1,6 +1,6 @@
 <template>
     <div class="camera">
-        <img :src="useCameraUrl" class="w-100" alt="camera stream">
+        <img :src="useCameraUrl" class="w-100 h-100" alt="camera stream">
     </div>
 
 </template>
@@ -33,9 +33,9 @@ import {ElMessage} from "element-plus";
 <style scoped>
     .camera {
         width: 80%;
-        height: 60%;
+        height: 80%;
         margin-left: 10%;
-        margin-top: 15%;
+        margin-top: 5%;
         box-shadow: var(--el-box-shadow-dark);
     }
 </style>

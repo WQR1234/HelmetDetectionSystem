@@ -12,7 +12,7 @@ def stream_camera(request):
     def generate():
         while True:
             ret, frame = cap.read()
-            frame = y5d.detect_and_save_image(frame, None, False)
+            frame = y5d.detect_and_save_image(frame, None)
             ret, jpeg = cv2.imencode('.jpg', frame)
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')

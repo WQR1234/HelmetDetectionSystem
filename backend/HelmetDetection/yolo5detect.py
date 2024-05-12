@@ -15,8 +15,11 @@ class Yolo5Detect:
         nl = len(self.anchors)
         self.grid = [np.zeros(1)] * nl
 
-    def get_image(self, image_path):
-        img = cv2.imread(image_path)
+    def get_image(self, image_or_path):
+        if isinstance(image_or_path, str):
+            img = cv2.imread(image_or_path)
+        else:
+            img = image_or_path
         im0 = img.copy()
 
         img = self.letterbox(img)[0]
@@ -307,8 +310,10 @@ class Yolo5Detect:
             label = f'{names[int(cls)]} {conf:.2f}'
             self.plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
 
-        
-        cv2.imwrite(save_path, im0)
+        if save_path:
+            cv2.imwrite(save_path, im0)
+        else:
+            return im0
 
     
     def detect_and_save_video(self, video_path: str, save_path):

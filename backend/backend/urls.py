@@ -54,6 +54,7 @@ urlpatterns = [
     path('get_videos_by_date/', get_videos_in_date_range), 
 
     path('check_camera/', views.check_camera),
+    path('use_camera/', views.stream_camera),
 
     re_path('media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT}, 'media')
 
