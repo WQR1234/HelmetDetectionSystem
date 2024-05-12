@@ -20,7 +20,8 @@ from django.views.static import serve
 from django.conf import settings
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from users.views import UserRegisterAPIView, get_user_info, get_user_images, get_user_videos, delete_image, delete_video
+from users.views import UserRegisterAPIView, get_user_info, get_user_images, get_user_videos, delete_image, delete_video, \
+                                            get_images_in_date_range, get_videos_in_date_range
 from HelmetDetection import views
 
 urlpatterns = [
@@ -48,6 +49,9 @@ urlpatterns = [
     path('get_videos/', get_user_videos),
     path('delete_image/<int:image_id>/', delete_image),
     path('delete_video/<int:video_id>/', delete_video),
+
+    path('get_images_by_date/', get_images_in_date_range), 
+    path('get_videos_by_date/', get_videos_in_date_range), 
 
     path('check_camera/', views.check_camera),
 

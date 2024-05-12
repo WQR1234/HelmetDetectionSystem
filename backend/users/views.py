@@ -12,6 +12,8 @@ from .serializers import UserRegisterSerializer, UserInfoSerializer
 from HelmetDetection.serializers import ImageSerializer, VideoSerializer
 from HelmetDetection.models import Image, Video
 
+from datetime import datetime, date
+
 # Create your views here.
 
 
@@ -83,3 +85,49 @@ def delete_video(request, video_id):
     
     video.delete()
     return Response({"message": "Video deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_images_in_date_range(request):
+    user = request.user
+
+    start_date_str = request.GET.get('startDate')
+    end_date_str = request.GET.get('endDate')
+
+    if not start_date_str:
+        start_date = date(2000, 1, 1)
+    else:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+    
+    if not end_date_str:
+        end_date = date(2099, 12, 31)
+    else:
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+    images = Image.objects.filter(user=user, upload_date__range=[start_date, end_date])
+    serializer = ImageSerializer(images, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_videos_in_date_range(request):
+    user = request.user
+
+    start_date_str = request.GET.get('startDate')
+    end_date_str = request.GET.get('endDate')
+
+    if not start_date_str:
+        start_date = date(2000, 1, 1)
+    else:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+    
+    if not end_date_str:
+        end_date = date(2099, 12, 31)
+    else:
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+    images = Video.objects.filter(user=user, upload_date__range=[start_date, end_date])
+    serializer = VideoSerializer(images, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

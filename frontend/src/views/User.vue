@@ -14,7 +14,7 @@
 <!--    </div>-->
 
     <div class="sub-content">
-        <el-scrollbar height="400px">
+        <el-scrollbar height="350px">
 
             <el-card v-for="(item, idx) in imageList" :key="item.id" >
                 <img
@@ -32,7 +32,7 @@
     </div>
 
     <div class="sub-content">
-        <el-scrollbar height="400px">
+        <el-scrollbar height="350px">
 
             <el-card v-for="(item, idx) in videoList" :key="item.id" >
                 <video class="w-100" :src="store.serverRootUrl+'/'+item.video_path" controls autoplay loop/>
@@ -49,11 +49,36 @@
         </el-scrollbar>
     </div>
 
+    <div class="demo-date-picker">
+        <div class="block">
+            <span class="demonstration">Start Time</span>
+            <el-date-picker
+                v-model="startDate"
+                type="date"
+                placeholder="Pick a day"
+                :size="size"
+                value-format="YYYY-MM-DD"
+            />
+        </div>
+        <div class="block">
+            <span class="demonstration">End Time</span>
+            <el-date-picker
+                v-model="endDate"
+                type="date"
+                placeholder="Pick a day"
+                :size="size"
+                value-format="YYYY-MM-DD"
+            />
+        </div>
+        <div class="block">
+            <el-button type="primary" @click="searchImagesAndVideos">搜索</el-button>
+        </div>
+    </div>
 
 </template>
 
 <script setup lang="ts">
-    import {onMounted, reactive} from "vue";
+import {onMounted, reactive, ref} from "vue";
     import  {useStore} from "@/store";
     import axios, {type AxiosRequestConfig} from "axios";
     import router from "@/router";
@@ -80,6 +105,10 @@
     const videoStateText = ['查看检测结果', '检测中...', '查看原视频']
 
     const store = useStore()
+
+    const size = ref<'default' | 'large' | 'small'>('default')
+    const startDate = ref('')
+    const endDate = ref('')
 
     onMounted(async ()=>{
 
@@ -215,15 +244,81 @@
         }
     }
 
+    async function searchImagesAndVideos() {
+        console.log(startDate.value)
+        console.log(endDate.value)
+
+        const access = localStorage.getItem('access')
+        try {
+            const response = await axios.get(`${store.serverRootUrl}/get_images_by_date/`, {
+                headers: {
+                    Authorization: `Bearer ${access}`,
+                },
+                params: {
+                    startDate: startDate.value,
+                    endDate: endDate.value,
+                }
+            })
+
+            imageList.splice(0, imageList.length)
+            imageState.splice(0, imageState.length)
+            imageList.push(...response.data)
+            imageState.push(...Array(response.data.length).fill(false))
+        } catch {
+
+        }
+
+        try {
+            const response = await axios.get(`${store.serverRootUrl}/get_videos_by_date/`, {
+                headers: {
+                    Authorization: `Bearer ${access}`,
+                },
+                params: {
+                    startDate: startDate.value,
+                    endDate: endDate.value,
+                }
+            })
+
+            videoList.splice(0, videoList.length)
+            videoState.splice(0, videoState.length)
+            videoList.push(...response.data)
+            videoState.push(...Array(response.data.length).fill(0))
+        } catch {
+
+        }
+    }
+
 </script>
 
 <style scoped>
     .sub-content {
         margin-left: 25%;
-        margin-top: 30px;
+        margin-top: 20px;
         width: 50%;
         justify-content: center;
         align-items: center;
     }
+    .demo-date-picker {
+        display: flex;
+        width: 100%;
+        padding: 0;
+        flex-wrap: wrap;
+    }
 
+    .demo-date-picker .block {
+        padding: 30px 0;
+        text-align: center;
+        border-right: solid 1px var(--el-border-color);
+        flex: 1;
+        margin-top: 30px;
+    }
+
+
+
+    .demo-date-picker .demonstration {
+        display: block;
+        color: var(--el-text-color-secondary);
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
 </style>
